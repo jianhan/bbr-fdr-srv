@@ -1,0 +1,28 @@
+version: "3.5"
+services:
+
+  redis:
+    image: redis:alpine
+    container_name: redie-bbr-fdr-srv
+    ports:
+      - 6379:6379
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - ./redis_data:/data
+    restart: always
+
+  mongodb:
+    image: mongo
+    container_name: mongodb-bbr-fdr-srv
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: username
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: bbr-fdr-srv
+    ports:
+      - 27017:27017
+    volumes:
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    restart: always
+
+volumes:
+  redis_data:

@@ -32,3 +32,14 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+#envs
+.env.testing
+.env.staging
+.env.production
+
+/mongo-init.js
+/mongodb-volumn
+/redis_data
+
+/src/cache
