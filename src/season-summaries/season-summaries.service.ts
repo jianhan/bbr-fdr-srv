@@ -6,28 +6,23 @@ import { Model } from 'mongoose';
 import {
   downloadHtmlByUrl,
   findDocByYear,
-  getCurrentYear,
+  getCurrentYear, getMapProp,
   log,
   pointFree,
   setCacheValWithTTL,
   setMapProp,
   unary,
+  validOrThrow, validPropOrThrow,
   withCacheByKey,
 } from '../functions';
+
 import { from } from 'rxjs';
 import { map, mergeMap, tap } from 'rxjs/operators';
 import { ConfigService } from '@nestjs/config';
-import {
-  checkUrlExists,
-  checkYearExists,
-  createMapByYear,
-  extractAndSetProps,
-  extractAndSetOverall,
-  setUrlByYear,
-  extractAndSetConferenceStandings,
-} from './functions';
+import { checkUrlExists, checkYearExists, createMapByYear, setUrlByYear } from './functions/functions';
+import { extractOverall } from './functions/overall';
 import { SeasonSummaryMap } from './types';
-import * as fp from 'lodash/fp';
+import { partial, pipe } from 'lodash/fp';
 import { SeasonSummary, SeasonSummaryDocument } from './schemas/season-summary.schema';
 import { UpdateMapProp, UpdateMapPropSync } from '../types';
 
@@ -43,6 +38,7 @@ export class SeasonSummariesService {
   private upsertYear: (summaryMap: SeasonSummaryMap) => Promise<SeasonSummaryDocument>;
   private downloadAndSetHtml: UpdateMapProp<SeasonSummaryMap>;
   private wrapCacheWithManager: (key: string, getValFunc) => Promise<any>;
+  private setOverall: (m) => any;
 
   constructor(
     private httpService: HttpService,
@@ -53,7 +49,6 @@ export class SeasonSummariesService {
     this.domainUrl = this.configService.get<string>('DOMAIN_URL');
     this.minimalYear = this.configService.get<number>('MINIMAL_YEAR');
     this.ttl = this.configService.get<number>('CACHE_TTL');
-
     this.createMap = unary(createMapByYear(this.minimalYear, getCurrentYear()));
     this.setUrl = unary(setUrlByYear(this.domainUrl));
     this.upsertYear = (summaryMap: SeasonSummaryMap) =>
@@ -64,13 +59,16 @@ export class SeasonSummariesService {
         })
         .exec();
 
-    const setCacheWithTTLFunc = fp.partial(setCacheValWithTTL, [this.cacheManager, this.ttl]);
-    this.wrapCacheWithManager = fp.partial(withCacheByKey, [log(this.logger), this.cacheManager.get, setCacheWithTTLFunc]);
-    this.downloadAndSetHtml = (summaryMap: SeasonSummaryMap): Promise<SeasonSummaryMap> => {
-      return this.wrapCacheWithManager(summaryMap.get('url'), pointFree(downloadHtmlByUrl, summaryMap.get('url'))).then(
-        fp.partial(setMapProp, [summaryMap, 'html']),
-      );
-    };
+    const setCacheWithTTLFunc = partial(setCacheValWithTTL, [this.cacheManager, this.ttl]);
+    this.wrapCacheWithManager = partial(withCacheByKey, [log(this.logger), this.cacheManager.get, setCacheWithTTLFunc]);
+
+    // todo: fix type below
+    this.downloadAndSetHtml = (summaryMap: SeasonSummaryMap): Promise<SeasonSummaryMap> =>
+      this.wrapCacheWithManager(summaryMap.get('url'), pointFree(downloadHtmlByUrl, summaryMap.get('url'))).then((v) => {
+        return setMapProp('html')(v)(summaryMap);
+      }) as any;
+
+    this.setOverall = (m) => m.set('overall', extractOverall(m.get('html')));
   }
 
   @Cron(CronExpression.EVERY_5_SECONDS)
@@ -86,13 +84,13 @@ export class SeasonSummariesService {
         tap((v) => this.logger.log(`url exists: ${v}`)),
         mergeMap(this.downloadAndSetHtml),
         tap((v) => this.logger.log(`downloaded and set html from: ${v.get('url')}`)),
-        mergeMap(extractAndSetProps(extractAndSetOverall, extractAndSetConferenceStandings)),
-        tap((v) => this.logger.log(`extracted overall: ${v.get('overall')}`)),
-        // map(convertOverallDataToOverall),
-        // mergeMap((v) => from(this.upsertYear(v))),
+        map(this.setOverall),
+        map(validPropOrThrow('overall')),
+        // tap((v) => this.logger.log(`extracted overall: ${v.get('overall')}`)),
       )
       .toPromise()
       .then((result) => {
+        console.debug(result);
         this.logger.log('finished sync overall');
         return result;
       })

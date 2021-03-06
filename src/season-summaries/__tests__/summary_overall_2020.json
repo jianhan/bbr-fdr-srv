@@ -1,0 +1,39 @@
+{
+  "leagueChampion": {
+    "title": "Los Angeles Lakers",
+    "href": "/teams/LAL/2020.html",
+    "data": null
+  },
+  "mostValuablePlayer": {
+    "title": "Giannis Antetokounmpo",
+    "href": "/players/a/antetgi01.html",
+    "data": "29.5/13.6/5.6"
+  },
+  "rookieOfTheYear": [
+    {
+      "title": "Ja Morant",
+      "href": "/players/m/moranja01.html",
+      "data": "17.8/3.9/7.3"
+    }
+  ],
+  "ppgLeader": {
+    "title": "James Harden",
+    "href": "/players/h/hardeja01.html",
+    "data": "34.3"
+  },
+  "rpgLeader": {
+    "title": "Andre Drummond",
+    "href": "/players/d/drumman01.html",
+    "data": "15.2"
+  },
+  "apgLeader": {
+    "title": "LeBron James",
+    "href": "/players/j/jamesle01.html",
+    "data": "10.2"
+  },
+  "wsLeader": {
+    "title": "James Harden",
+    "href": "/players/h/hardeja01.html",
+    "data": "13.1"
+  }
+}

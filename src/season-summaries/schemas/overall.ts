@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, ValidateNested } from 'class-validator';
+import { IsNotEmpty, IsOptional, MinLength, ValidateNested } from 'class-validator';
 import { Prop } from '@nestjs/mongoose';
 import { Link } from '../../models/Link';
 
@@ -14,8 +14,9 @@ export class Overall {
 
   @IsOptional()
   @ValidateNested()
+  @MinLength(1)
   @Prop()
-  rookieOfTheYear?: Link;
+  rookieOfTheYear?: Link[];
 
   @IsNotEmpty()
   @Prop({ required: true })

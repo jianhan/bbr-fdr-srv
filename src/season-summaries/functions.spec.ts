@@ -1,11 +1,11 @@
-import { createMapByYear, extractAndSetProps, setUrlByYear } from './functions';
+import { createMapByYear, extractOverall, extractAndSetProps, setUrlByYear } from './functions';
 import { Map } from 'immutable';
 import { SeasonSummaryMap } from './types';
 import * as funcs from '../functions';
 import { identity } from 'lodash/fp';
-
-jest.mock('../functions');
-const mockedPropIsValidOrThrow = <jest.Mock<typeof funcs.propIsValidOrThrow>>funcs.propIsValidOrThrow;
+import * as fs from 'fs';
+import * as path from 'path';
+import { Overall } from './schemas/overall';
 
 describe('test functions', () => {
   describe('test createMapByYear', () => {
@@ -41,13 +41,15 @@ describe('test functions', () => {
     });
   });
 
-  describe('extractAndSetProps', () => {
+  describe('test extractAndSetProps', () => {
     it('should throw when property validation fail', (done) => {
       const errMsg = `Property html is required in in map`;
       const inputMap = Map() as SeasonSummaryMap;
-      mockedPropIsValidOrThrow.mockImplementation((key: string) => (data) => {
+
+      jest.spyOn(funcs, 'propIsValidOrThrow').mockImplementation((key: string) => (data) => {
         throw new Error(errMsg);
       });
+
       extractAndSetProps((v) => v)(inputMap).subscribe(
         identity,
         (err) => {
@@ -61,12 +63,32 @@ describe('test functions', () => {
     it('should call the functions in pipe to extract and set properties', () => {
       const inputMap = Map() as SeasonSummaryMap;
       const mockedFunc = jest.fn(identity);
-      // @ts-ignore
-      mockedPropIsValidOrThrow.mockImplementation((key: string) => (data) => {
+      jest.spyOn(funcs, 'propIsValidOrThrow').mockImplementation((key: string) => (data) => {
         return data;
       });
       extractAndSetProps(mockedFunc)(inputMap).subscribe(identity, identity, identity);
       expect(mockedFunc).toBeCalled();
     });
+  });
+
+  describe('test extractAndSetOverall', () => {
+    let yearsWithHtml;
+    beforeEach(() => {
+      yearsWithHtml = [2000, 2010, 2020].map((year: number, index: number) => {
+        const html = fs.readFileSync(path.join(__dirname, '__tests__', `summary_${year}.html`)).toString();
+        const expected: Overall = JSON.parse(fs.readFileSync(path.join(__dirname, '__tests__', `summary_overall_${year}.json`)).toString());
+        return { year, html, expected };
+      });
+    });
+    it('should extract all attributes', () => {
+      yearsWithHtml.forEach((v) => {
+        const summaryMap: SeasonSummaryMap = Map();
+        const actual = extractOverall(summaryMap.set('year', v.year).set('html', v.html));
+        expect(actual.get('year')).toEqual(v.year);
+        expect(actual.get('overall')).toEqual(v.expected);
+      });
+    });
+
+    it('should validate overall if it is invalid', () => {});
   });
 });

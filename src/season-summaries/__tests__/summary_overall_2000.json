@@ -1,0 +1,44 @@
+{
+  "leagueChampion": {
+    "title": "Los Angeles Lakers",
+    "href": "/teams/LAL/2000.html",
+    "data": null
+  },
+  "mostValuablePlayer": {
+    "title": "Shaquille O'Neal",
+    "href": "/players/o/onealsh01.html",
+    "data": "29.7/13.6/3.8"
+  },
+  "rookieOfTheYear": [
+    {
+      "title": "Elton Brand",
+      "href": "/players/b/brandel01.html",
+      "data": "20.1/10.0/1.9"
+    },
+    {
+      "title": "Steve Francis",
+      "href": "/players/f/francst01.html",
+      "data": "18.0/5.3/6.6"
+    }
+  ],
+  "ppgLeader": {
+    "title": "Shaquille O'Neal",
+    "href": "/players/o/onealsh01.html",
+    "data": "29.7"
+  },
+  "rpgLeader": {
+    "title": "Dikembe Mutombo",
+    "href": "/players/m/mutomdi01.html",
+    "data": "14.1"
+  },
+  "apgLeader": {
+    "title": "Jason Kidd",
+    "href": "/players/k/kiddja01.html",
+    "data": "10.1"
+  },
+  "wsLeader": {
+    "title": "Shaquille O'Neal",
+    "href": "/players/o/onealsh01.html",
+    "data": "18.6"
+  }
+}

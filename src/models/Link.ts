@@ -2,7 +2,6 @@ import { Prop } from '@nestjs/mongoose';
 import { IsNotEmpty, IsString, IsUrl } from 'class-validator';
 
 export class Link {
-
   @IsString()
   @IsNotEmpty()
   @Prop({ required: true })
@@ -12,6 +11,6 @@ export class Link {
   @IsUrl()
   href: string;
 
-  @Prop()
-  data?: string;
+  @Prop({ type: [String] })
+  data?: string[];
 }

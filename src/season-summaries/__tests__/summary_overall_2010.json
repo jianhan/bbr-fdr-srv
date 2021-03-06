@@ -1,0 +1,39 @@
+{
+  "leagueChampion": {
+    "title": "Los Angeles Lakers",
+    "href": "/teams/LAL/2010.html",
+    "data": null
+  },
+  "mostValuablePlayer": {
+    "title": "LeBron James",
+    "href": "/players/j/jamesle01.html",
+    "data": "29.7/7.3/8.6"
+  },
+  "rookieOfTheYear": [
+    {
+      "title": "Tyreke Evans",
+      "href": "/players/e/evansty01.html",
+      "data": "20.1/5.3/5.8"
+    }
+  ],
+  "ppgLeader": {
+    "title": "Kevin Durant",
+    "href": "/players/d/duranke01.html",
+    "data": "30.1"
+  },
+  "rpgLeader": {
+    "title": "Dwight Howard",
+    "href": "/players/h/howardw01.html",
+    "data": "13.2"
+  },
+  "apgLeader": {
+    "title": "Steve Nash",
+    "href": "/players/n/nashst01.html",
+    "data": "11.0"
+  },
+  "wsLeader": {
+    "title": "LeBron James",
+    "href": "/players/j/jamesle01.html",
+    "data": "18.5"
+  }
+}
