@@ -158,3 +158,5 @@ export function setCacheWithTTL<T>(cacheManager: Cache, ttl: number, key: string
 }
 
 export const findNextYear = (currentYear: number) => pipe(prop('year'), inc, ifElse(lt(currentYear))(identity)(dec));
+
+export const toArray = (v) => [v];

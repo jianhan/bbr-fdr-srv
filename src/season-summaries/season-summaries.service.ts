@@ -6,13 +6,13 @@ import { Model } from 'mongoose';
 import {
   downloadHtmlByUrl,
   findDocByYear,
-  getCurrentYear, getMapProp,
+  getCurrentYear,
   log,
   pointFree,
   setCacheValWithTTL,
   setMapProp,
   unary,
-  validOrThrow, validPropOrThrow,
+  validPropOrThrow,
   withCacheByKey,
 } from '../functions';
 
@@ -22,7 +22,7 @@ import { ConfigService } from '@nestjs/config';
 import { checkUrlExists, checkYearExists, createMapByYear, setUrlByYear } from './functions/functions';
 import { extractOverall } from './functions/overall';
 import { SeasonSummaryMap } from './types';
-import { partial, pipe } from 'lodash/fp';
+import { partial } from 'lodash/fp';
 import { SeasonSummary, SeasonSummaryDocument } from './schemas/season-summary.schema';
 import { UpdateMapProp, UpdateMapPropSync } from '../types';
 
@@ -35,7 +35,7 @@ export class SeasonSummariesService {
 
   private createMap;
   private setUrl: UpdateMapPropSync<SeasonSummaryMap>;
-  private upsertYear: (summaryMap: SeasonSummaryMap) => Promise<SeasonSummaryDocument>;
+  private upsertByYear: (summaryMap: SeasonSummaryMap) => Promise<SeasonSummaryDocument>;
   private downloadAndSetHtml: UpdateMapProp<SeasonSummaryMap>;
   private wrapCacheWithManager: (key: string, getValFunc) => Promise<any>;
   private setOverall: (m) => any;
@@ -51,9 +51,9 @@ export class SeasonSummariesService {
     this.ttl = this.configService.get<number>('CACHE_TTL');
     this.createMap = unary(createMapByYear(this.minimalYear, getCurrentYear()));
     this.setUrl = unary(setUrlByYear(this.domainUrl));
-    this.upsertYear = (summaryMap: SeasonSummaryMap) =>
+    this.upsertByYear = (summaryMap: SeasonSummaryMap) =>
       this.seasonSummaryModel
-        .findOneAndUpdate({ year: summaryMap.get('year') }, summaryMap, {
+        .findOneAndUpdate({ year: summaryMap.get('year') }, summaryMap.toJS(), {
           new: true,
           upsert: true,
         })
@@ -86,11 +86,14 @@ export class SeasonSummariesService {
         tap((v) => this.logger.log(`downloaded and set html from: ${v.get('url')}`)),
         map(this.setOverall),
         map(validPropOrThrow('overall')),
-        // tap((v) => this.logger.log(`extracted overall: ${v.get('overall')}`)),
+        mergeMap((v) => {
+          console.debug(123213)
+          return from(this.upsertByYear(v));
+        }),
+        // map(this.upsertByYear),
       )
       .toPromise()
       .then((result) => {
-        console.debug(result);
         this.logger.log('finished sync overall');
         return result;
       })

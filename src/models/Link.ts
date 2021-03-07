@@ -11,6 +11,6 @@ export class Link {
   @IsUrl()
   href: string;
 
-  @Prop({ type: [String] })
-  data?: string[];
+  @Prop({ type: String })
+  data?: string;
 }
