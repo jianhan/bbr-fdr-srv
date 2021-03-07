@@ -14,6 +14,7 @@ type SeasonSummaryDocument = SeasonSummary & Document;
 @Schema({ collection: 'season-summaries', timestamps: true })
 class SeasonSummary {
   @IsNumber()
+  @IsNotEmpty()
   @Prop({ required: true })
   year: number;
 

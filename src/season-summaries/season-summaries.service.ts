@@ -8,10 +8,12 @@ import {
   findDocByYear,
   getCurrentYear,
   log,
+  mapToJS,
   pointFree,
   setCacheValWithTTL,
   setMapProp,
   unary,
+  validOrThrow,
   validPropOrThrow,
   withCacheByKey,
 } from '../functions';
@@ -35,10 +37,10 @@ export class SeasonSummariesService {
 
   private createMap;
   private setUrl: UpdateMapPropSync<SeasonSummaryMap>;
-  private upsertByYear: (summaryMap: SeasonSummaryMap) => Promise<SeasonSummaryDocument>;
   private downloadAndSetHtml: UpdateMapProp<SeasonSummaryMap>;
   private wrapCacheWithManager: (key: string, getValFunc) => Promise<any>;
   private setOverall: (m) => any;
+  upsertByYear: (summary: SeasonSummaryDocument) => Promise<SeasonSummaryDocument>;
 
   constructor(
     private httpService: HttpService,
@@ -51,9 +53,9 @@ export class SeasonSummariesService {
     this.ttl = this.configService.get<number>('CACHE_TTL');
     this.createMap = unary(createMapByYear(this.minimalYear, getCurrentYear()));
     this.setUrl = unary(setUrlByYear(this.domainUrl));
-    this.upsertByYear = (summaryMap: SeasonSummaryMap) =>
+    this.upsertByYear = (summary: SeasonSummaryDocument) =>
       this.seasonSummaryModel
-        .findOneAndUpdate({ year: summaryMap.get('year') }, summaryMap.toJS(), {
+        .findOneAndUpdate({ year: summary.year }, summary, {
           new: true,
           upsert: true,
         })
@@ -86,11 +88,10 @@ export class SeasonSummariesService {
         tap((v) => this.logger.log(`downloaded and set html from: ${v.get('url')}`)),
         map(this.setOverall),
         map(validPropOrThrow('overall')),
-        mergeMap((v) => {
-          console.debug(123213)
-          return from(this.upsertByYear(v));
-        }),
-        // map(this.upsertByYear),
+        map(mapToJS),
+        map(validOrThrow),
+        map(this.upsertByYear),
+        mergeMap(from),
       )
       .toPromise()
       .then((result) => {
