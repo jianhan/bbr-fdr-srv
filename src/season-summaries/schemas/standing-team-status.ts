@@ -1,5 +1,5 @@
 import { Link } from '../../models/Link';
-import { IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, Max, Min, ValidateNested } from 'class-validator';
+import { IsInt, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString, Max, Min, ValidateNested } from 'class-validator';
 import { Prop } from '@nestjs/mongoose';
 
 export class StandingTeamStatus {
@@ -10,7 +10,18 @@ export class StandingTeamStatus {
 
   @IsNotEmpty()
   @Prop()
-  isPlayoffTeam: boolean;
+  @IsOptional()
+  isPlayoffTeam?: boolean;
+
+  @Prop()
+  @IsInt()
+  @IsOptional()
+  rank?: number;
+
+  @Prop()
+  @IsString()
+  @IsOptional()
+  division?: string;
 
   @IsNotEmpty()
   @IsInt()
@@ -35,7 +46,7 @@ export class StandingTeamStatus {
   @IsPositive()
   @IsOptional()
   @Prop()
-  gamesBehind?: number;
+  gamesBehind: number;
 
   @IsNotEmpty()
   @Prop()

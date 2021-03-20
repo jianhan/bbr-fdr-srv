@@ -1,4 +1,4 @@
-import { pipe, constant, eq, lt, lte, gte, prop, tap, identity } from 'lodash/fp';
+import { pipe, constant, eq, lt, lte, gte, prop, identity, negate, isNull } from 'lodash/fp';
 import { ConfigService } from '@nestjs/config';
 import { Model } from 'mongoose';
 import * as moment from 'moment';
@@ -6,14 +6,13 @@ import * as _ from 'lodash';
 import { Cache } from 'cache-manager';
 import axios from 'axios';
 import { Map } from 'immutable';
-import cheerio from 'cheerio';
+import * as cheerio from 'cheerio';
 import { from } from 'rxjs';
 import { Logger } from '@nestjs/common';
-
 import { ifElse } from 'sanctuary';
 import { validateSync } from 'class-validator';
-import Cheerio = cheerio.Cheerio;
-import { SeasonSummaryDocument } from './season-summaries/schemas/season-summary.schema';
+import { curry, uncurryN } from 'ramda';
+import { Link } from './models/Link';
 
 export const toObservable = (fn) => (...args) => from(fn(args));
 
@@ -28,6 +27,8 @@ export const debug = (logger: Logger) => (message: any, context?: string): void 
 export const verbose = (logger: Logger) => (message: any, context?: string): void => logger.verbose(message, context);
 
 export const setMapProp = (k) => (v) => (m) => m.set(k, v);
+
+export const setMapPropVal = curry(uncurryN(3, setMapProp));
 
 export const getMapProp = (k) => (m) => m.get(k);
 
@@ -48,9 +49,9 @@ export const arrFirst = (arr: any[]) => arr[0];
 
 export const first = (v) => v.first();
 
-export const siblings = (selector?: string) => (v: Cheerio) => v.siblings(selector);
+export const siblings = (selector?: string) => (v) => v.siblings(selector);
 
-export const next = (selector?: string) => (v: Cheerio) => v.next(selector);
+export const next = (selector?: string) => (v) => v.next(selector);
 
 export const lengthEq = (n: number) => isPropEq('length', n);
 
@@ -161,4 +162,18 @@ export const findNextYear = (currentYear: number) => pipe(prop('year'), inc, ifE
 
 export const toArray = (v) => [v];
 
-export const mapToJS = (m) => m.toJS()
+export const mapToJS = (m) => m.toJS();
+
+export const isNotNull = negate(isNull);
+
+export const createObjWithKey = (key) => (value) => ({ [key]: value });
+
+export const forkThenJoin = (join, ...funcs) => (val) => join(...funcs.map((f) => f(val)));
+
+export const mergeObjs = (...objs) => Object.assign({}, ...objs);
+
+export const cheerioLoadHtml = (html: string) => cheerio.load(html);
+
+export const selectChildren = (selector: string) => (element) => element.children(selector);
+
+export const createLinkObj = (linkElement: cheerio.Cheerio): Link => ({ title: linkElement.text(), href: linkElement.attr('href') });

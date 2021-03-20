@@ -12,6 +12,7 @@ import {
   pointFree,
   setCacheValWithTTL,
   setMapProp,
+  toObservable,
   unary,
   validOrThrow,
   validPropOrThrow,
@@ -53,13 +54,15 @@ export class SeasonSummariesService {
     this.ttl = this.configService.get<number>('CACHE_TTL');
     this.createMap = unary(createMapByYear(this.minimalYear, getCurrentYear()));
     this.setUrl = unary(setUrlByYear(this.domainUrl));
-    this.upsertByYear = (summary: SeasonSummaryDocument) =>
-      this.seasonSummaryModel
+    this.upsertByYear = (summary: SeasonSummaryDocument) => {
+      console.log(summary);
+      return this.seasonSummaryModel
         .findOneAndUpdate({ year: summary.year }, summary, {
           new: true,
           upsert: true,
         })
         .exec();
+    };
 
     const setCacheWithTTLFunc = partial(setCacheValWithTTL, [this.cacheManager, this.ttl]);
     this.wrapCacheWithManager = partial(withCacheByKey, [log(this.logger), this.cacheManager.get, setCacheWithTTLFunc]);
@@ -81,6 +84,7 @@ export class SeasonSummariesService {
         map(this.createMap),
         tap((v) => this.logger.log(`initialized overall data with year: ${v}`)),
         map(checkYearExists),
+        tap((v) => this.logger.log(`year exists: ${v}`)),
         map(this.setUrl),
         map(checkUrlExists),
         tap((v) => this.logger.log(`url exists: ${v}`)),
@@ -90,8 +94,7 @@ export class SeasonSummariesService {
         map(validPropOrThrow('overall')),
         map(mapToJS),
         map(validOrThrow),
-        map(this.upsertByYear),
-        mergeMap(from),
+        mergeMap((v) => from(this.upsertByYear(v))),
       )
       .toPromise()
       .then((result) => {
