@@ -1,7 +1,6 @@
 import { isNaN, eq, cond, identity } from 'lodash/fp';
-import * as cheerio from 'cheerio';
 import {
-  cheerioLoadHtml,
+  cheerioLoad,
   mergeObjs,
   createLinkObj,
   createObjWithKey,
@@ -9,11 +8,11 @@ import {
   forkThenJoin,
   isNotNull,
   matchesInBrackets,
-  selectChildren,
+  selectChildrenBy,
+  createObjWithRoot,
 } from '../../functions';
-import { ifElse, pipe, complement, head, propEq, always, assoc, pickAll } from 'ramda';
+import { ifElse, pipe, complement, head, propEq, always, pickAll } from 'ramda';
 
-const setRoot = ($: cheerio.Root) => assoc('$', $, {});
 const isDivisionRowTag = (row) => row.name === 'tr' && row.attribs['class'] === 'thead';
 const isDataRow = (trNode) => trNode.name === 'tr' && trNode.attribs['class'] === 'full_table';
 const getPrevTr = (element) => element.prev('tr');
@@ -25,7 +24,7 @@ const findDivision = pipe(
     [pipe(head, isDataRow), (row) => findDivision(row)],
   ]),
 );
-const extractTeamLink = pipe(selectChildren('a'), ifElse(propEq('length', 0), always(null), pipe(first, createLinkObj)));
+const extractTeamLink = pipe(selectChildrenBy('a'), ifElse(propEq('length', 0), always(null), pipe(first, createLinkObj)));
 const hasRank = (trElement) => matchesInBrackets(trElement.text()).length > 0;
 const extractRank = pipe(matchesInBrackets, head, Number.parseInt, ifElse(isNaN, always(null), identity));
 const extractIsPlayoffTeam = (trElement) => trElement.text().includes('*');
@@ -68,8 +67,8 @@ const extractConference = (id: string, prop: string) => (obj) => {
 };
 
 export const extractDivisionStandings = pipe(
-  cheerioLoadHtml,
-  setRoot,
+  cheerioLoad,
+  createObjWithRoot,
   extractConference('divs_standings_E', 'easternConference'),
   extractConference('divs_standings_W', 'westernConference'),
   pickAll(['easternConference', 'westernConference']),

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { Link } from '../../models/Link';
-import { IsDate, IsNotEmpty, IsNumber, IsOptional, IsUrl, ValidateNested } from 'class-validator';
+import { IsArray, IsDate, IsNotEmpty, IsNumber, IsOptional, IsUrl, ValidateNested } from 'class-validator';
 import { DivisionStandings } from './division-standings';
 import { PlayoffSerie } from './playoff-serie';
 import { ConferenceStandings } from './conference-standings';
@@ -39,8 +39,9 @@ class SeasonSummary {
 
   @ValidateNested()
   @IsOptional()
+  @IsArray()
   @Prop()
-  playoffSerie?: PlayoffSerie;
+  playoffSerie?: PlayoffSerie[];
 
   @IsNotEmpty()
   @Prop({ type: Array, of: Object, required: true })
