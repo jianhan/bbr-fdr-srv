@@ -48,32 +48,16 @@ class SeasonSummary {
   teamPerGameStats: TeamPerGameStat[];
 
   @IsNotEmpty()
-  @Prop({ type: Object, required: true })
-  leagueAverageTeamPerGameStat: GameStat;
-
-  @IsNotEmpty()
   @Prop({ type: Array, of: Object, required: true })
   opponentPerGameStats: TeamPerGameStat[];
-
-  @IsNotEmpty()
-  @Prop({ type: Object, required: true })
-  leagueAverageOpponentPerGameStat: GameStat;
 
   @IsNotEmpty()
   @Prop({ type: Array, of: Object, required: true })
   teamStats: TeamPerGameStat[];
 
   @IsNotEmpty()
-  @Prop({ type: Object, required: true })
-  leagueAverageTeamStat: GameStat;
-
-  @IsNotEmpty()
   @Prop({ type: Array, of: Object, required: true })
   opponentStats: TeamPerGameStat[];
-
-  @IsNotEmpty()
-  @Prop({ type: Object, required: true })
-  leagueAverageOpponentStat: GameStat;
 
   @IsNotEmpty()
   @Prop({ type: Array, of: Object, required: true })
