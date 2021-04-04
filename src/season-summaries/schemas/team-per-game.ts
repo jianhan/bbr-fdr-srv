@@ -1,5 +1,5 @@
 import { Link } from '../../models/Link';
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber } from 'class-validator';
 import { Prop } from '@nestjs/mongoose';
 
 export class TeamPerGame {
@@ -11,4 +11,8 @@ export class TeamPerGame {
   @IsNotEmpty()
   @Prop()
   team: Link;
+
+  @IsBoolean()
+  @Prop()
+  isPlayoffTeam: boolean;
 }

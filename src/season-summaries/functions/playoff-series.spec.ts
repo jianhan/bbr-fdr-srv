@@ -18,5 +18,12 @@ describe('test playoff series functions', () => {
         });
       });
     });
+
+    it('should return nothing when table can not be found', async () => {
+      const html = fs.readFileSync(path.join(__dirname, '../__tests__', `summary_2021.html`)).toString();
+      const actual = generateSeries(html);
+
+      expect(Maybe.isNothing(actual)).toBe(true);
+    });
   });
 });

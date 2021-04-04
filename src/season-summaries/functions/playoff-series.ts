@@ -10,8 +10,8 @@ import {
   mergeObjs,
   toNothing,
   selectChildrenBy,
-  selectElementBy,
-  selectBy,
+  selectByRoot,
+  selectWithRoot,
   createObjWithKey,
 } from '../../functions';
 
@@ -56,34 +56,34 @@ const gamesReducer = ($: Root) => (accumulatedGames: PlayoffSerieGame[], current
   return append(obj, accumulatedGames);
 };
 const selectGameRows = findBy('td:first-child > div:first-child > table:first-child > tbody:first-child > tr');
-const rowToGames = ($: Root) => pipe(selectBy($), selectGameRows, cheerioToArray, reduce(gamesReducer($), []), createObjWithKey('games'));
+const rowToGames = ($: Root) => pipe(selectWithRoot($), selectGameRows, cheerioToArray, reduce(gamesReducer($), []), createObjWithKey('games'));
 
 const selectPreviousTds = (tableRow): cheerio.Element[] => tableRow.prev('tr').first().children('td').toArray();
-const rowToSerieOveralls = ($: Root) => pipe(selectBy($), selectPreviousTds, ifElse(propEq('length', 3), extractOveralls($), always({})));
+const rowToSerieOveralls = ($: Root) => pipe(selectWithRoot($), selectPreviousTds, ifElse(propEq('length', 3), extractOveralls($), always({})));
 
-const extractTitle = ($: Root) => pipe(nth(0), selectBy($), invoker(0, 'text'), createObjWithKey('title'));
-const extractStatsFromArr = ($: Root) => pipe(nth(0), selectBy($), createLinkObj, createObjWithKey('stats'));
+const extractTitle = ($: Root) => pipe(nth(0), selectWithRoot($), invoker(0, 'text'), createObjWithKey('title'));
+const extractStatsFromArr = ($: Root) => pipe(nth(0), selectWithRoot($), createLinkObj, createObjWithKey('stats'));
 const extractStats = ($: Root) =>
-  pipe(nth(2), selectBy($), selectChildrenBy('a'), cheerioToArray, ifElse(propEq('length', 1), extractStatsFromArr($), identity));
+  pipe(nth(2), selectWithRoot($), selectChildrenBy('a'), cheerioToArray, ifElse(propEq('length', 1), extractStatsFromArr($), identity));
 
-const extractTeamWon = ($: Root) => pipe(nth(0), pipe(selectBy($), createLinkObj, createObjWithKey('teamWon')));
-const extractTeamLose = ($: Root) => pipe(nth(1), pipe(selectBy($), createLinkObj, createObjWithKey('teamLose')));
+const extractTeamWon = ($: Root) => pipe(nth(0), pipe(selectWithRoot($), createLinkObj, createObjWithKey('teamWon')));
+const extractTeamLose = ($: Root) => pipe(nth(1), pipe(selectWithRoot($), createLinkObj, createObjWithKey('teamLose')));
 const extractWonLoseTeam = ($: Root) => forkThenJoin(mergeObjs, extractTeamWon($), extractTeamLose($));
 const extractTeams = ($: Root) =>
-  pipe(nth(1), selectBy($), selectChildrenBy('a'), cheerioToArray, ifElse(propEq('length', 2), extractWonLoseTeam($), identity));
+  pipe(nth(1), selectWithRoot($), selectChildrenBy('a'), cheerioToArray, ifElse(propEq('length', 2), extractWonLoseTeam($), identity));
 const extractScoresFromArr = pipe(
   head,
   split('-'),
   ifElse(propEq('length', 2), (arr) => ({ wonBy: parseInt(arr[0], 10), loseBy: parseInt(arr[1], 10) }), identity),
 );
 const extractScores = ($: Root) =>
-  pipe(nth(1), selectBy($), invoker(0, 'text'), matchesInBrackets, ifElse(propEq('length', 1), extractScoresFromArr, identity));
+  pipe(nth(1), selectWithRoot($), invoker(0, 'text'), matchesInBrackets, ifElse(propEq('length', 1), extractScoresFromArr, identity));
 
 const extractOveralls = ($: Root) => forkThenJoin(mergeObjs, extractTitle($), extractStats($), extractTeams($), extractScores($));
 const transformRowToSerie = ($: Root) => forkThenJoin(mergeObjs, rowToGames($), rowToSerieOveralls($));
 const selectToggleableRows = (table: Cheerio) => table.find('tbody').first().children('tr.toggleable');
 const processSeriesTable = ($: Root) => pipe(selectToggleableRows, cheerioToArray, partial(map, [transformRowToSerie($)]));
-const selectSeriesTable = pipe(selectElementBy('#all_playoffs'), ifElse(propEq('length', 1), toJust, toNothing));
+const selectSeriesTable = pipe(selectByRoot('#all_playoffs'), ifElse(propEq('length', 1), toJust, toNothing));
 
 /**
  * @param html

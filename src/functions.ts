@@ -8,13 +8,13 @@ import axios from 'axios';
 import { Map } from 'immutable';
 import { from } from 'rxjs';
 import { Logger } from '@nestjs/common';
-import { ifElse } from 'sanctuary';
 import { validateSync } from 'class-validator';
-import { assoc, curry, uncurryN } from 'ramda';
-import { Maybe } from 'ramda-fantasy';
+import { assoc, curry, propEq, uncurryN, ifElse } from 'ramda';
 import { Link } from './models/Link';
 import Cheerio = cheerio.Cheerio;
 import * as cheerio from 'cheerio';
+import { Left, Right, Just, Nothing } from 'sanctuary';
+import Root = cheerio.Root;
 
 export const toObservable = (fn) => (...args) => from(fn(args));
 export const log = (logger: Logger) => (message: any, context?: string): void => logger.log(message, context);
@@ -36,6 +36,7 @@ export const next = (selector?: string) => (v) => v.next(selector);
 export const lengthEq = (n: number) => isPropEq('length', n);
 export const lengthGteTo = (n: number) => pipe(prop('length'), lte(n));
 export const initializeMap = (k) => (v) => Map({}).set(k, v);
+
 export function getMongoConnectionString(configService: ConfigService): string {
   const username = configService.get<string>('MONGODB_USERNAME');
   const password = configService.get<string>('MONGODB_PASSWORD');
@@ -45,14 +46,18 @@ export function getMongoConnectionString(configService: ConfigService): string {
 
   return `mongodb://${username}:${password}@${host}:${port}/${database}`;
 }
+
 export function findDocByYear<T>(model: Model<any>, sortOrder = 1): Promise<T> {
   return model.findOne({}, null, { sort: { year: sortOrder } }).exec();
 }
+
 export const getCurrentYear = (): number => parseInt(moment().format('YYYY'), 10);
 export const unary = (fn) => (arg) => fn(arg);
+
 export function setCacheValWithTTL<T>(cacheManager: Cache, ttl: number, key: string, val: T): Promise<T> {
   return cacheManager.set(key, val, { ttl }).then(constant(val));
 }
+
 export const withCacheByKey = async (loggerFunc, getCachedValByFunc, setCachedValFunc, key: string, getValFunc) => {
   const cachedVal = await getCachedValByFunc(key);
   if (_.isNull(cachedVal) || _.isUndefined(cachedVal)) {
@@ -81,11 +86,13 @@ export const regexMatches = (regex: RegExp) => (str: string) => {
   return results;
 };
 export const matchesInBrackets = regexMatches(inBracketsRegExp);
-export const matchInBracket = pipe(regexMatches(inBracketsRegExp), ifElse(isPropGte('length', 1))(pipe(arrFirst))(constant(null)));
+export const matchInBracket = pipe(regexMatches(inBracketsRegExp), ifElse(isPropGte('length', 1), arrFirst, constant(null)));
+
 export function isMapPropValid(key: string, data: Map<string, any>): boolean {
   const val = data.get(key);
   return !_.isNull(val) && !_.isUndefined(val);
 }
+
 /**
  * TODO: fix data type, if there is a type specified, then it must be generic enough to be
  * used anywhere.
@@ -113,10 +120,12 @@ export const validPropOrThrow = (key) => (immutableMap) => {
 
   return immutableMap;
 };
+
 export function setCacheWithTTL<T>(cacheManager: Cache, ttl: number, key: string, val: T) {
   return cacheManager.set(key, val, ttl);
 }
-export const findNextYear = (currentYear: number) => pipe(prop('year'), inc, ifElse(lt(currentYear))(identity)(dec));
+
+export const findNextYear = (currentYear: number) => pipe(prop('year'), inc, ifElse(lt(currentYear), identity, dec));
 export const cheerioToArray = (v: Cheerio) => v.toArray();
 export const mapToJS = (m) => m.toJS();
 export const isNotNull = negate(isNull);
@@ -127,8 +136,19 @@ export const cheerioLoad = (html: string) => cheerio.load(html);
 export const createObjWithRoot = ($: cheerio.Root) => assoc('$', $, {});
 export const selectChildrenBy = (selector: string) => (element) => element.children(selector);
 export const findBy = (selector: string) => (element) => element.find(selector);
-export const createLinkObj = (linkElement: cheerio.Cheerio): Link => ({ title: linkElement.text(), href: linkElement.attr('href') });
-export const selectElementBy = (selector: string) => ($) => $(`${selector}`);
-export const toJust = (v) => Maybe.Just(v);
-export const toNothing = (v) => Maybe.Nothing();
-export const selectBy = ($: cheerio.Root) => (el: cheerio.Element) => $(el);
+export const createLinkObj = (linkElement: cheerio.Cheerio): Link => ({
+  title: linkElement.text(),
+  href: linkElement.attr('href'),
+});
+export const selectByRoot = (selector: string) => ($) => $(`${selector}`);
+
+// TODO: fix types below
+export const toJust: any = (v) => Just(v);
+export const toNothing: any = (v) => Nothing;
+export const toLeft: any = (v) => Left(v);
+export const toRight: any = (v) => Right(v);
+export const selectWithRoot = ($: cheerio.Root) => (el: cheerio.Element) => $(el);
+export const toEitherIf = (predicate) => ifElse(predicate, toLeft, toRight);
+export const propLengthEq = (len: number) => propEq('length', len);
+export const toLeftIfLengthIsZero = toEitherIf(propLengthEq(0));
+export const cheerioAttrEq = (k, v) => (element: Cheerio) => element.attr(k) === v;

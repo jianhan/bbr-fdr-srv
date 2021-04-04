@@ -2,126 +2,145 @@ import { IsNotEmpty, IsNumber, Max, Min } from 'class-validator';
 import { Prop } from '@nestjs/mongoose';
 
 export class GameStat {
-  @IsNotEmpty()
   @IsNumber()
+  @Min(1)
+  @IsNotEmpty()
   @Prop()
   games: number;
 
-  @IsNotEmpty()
   @IsNumber()
+  @Min(1)
+  @IsNotEmpty()
   @Prop()
   minutesPlayed: number;
 
-  @IsNotEmpty()
   @IsNumber()
+  @Min(1)
+  @IsNotEmpty()
   @Prop()
   fieldGoals: number;
 
-  @IsNotEmpty()
-  @IsNumber()
   @Prop()
+  @IsNumber()
+  @Min(1)
+  @IsNotEmpty()
   fieldGoalAttempts: number;
 
-  @IsNotEmpty()
   @IsNumber()
   @Min(0)
   @Max(1)
+  @IsNotEmpty()
   @Prop()
   fieldGoalPercentage: number;
 
-  @IsNotEmpty()
   @IsNumber()
-  @Prop()
-  twoPointFieldGoals: number;
-
+  @Min(1)
   @IsNotEmpty()
-  @IsNumber()
-  @Prop()
-  twoPointFieldGoalAttempts: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(0)
-  @Max(1)
-  @Prop()
-  twoPointFieldGoalPercentage: number;
-
-  @IsNotEmpty()
-  @IsNumber()
   @Prop()
   threePointFieldGoals: number;
 
-  @IsNotEmpty()
   @IsNumber()
+  @Min(1)
+  @IsNotEmpty()
   @Prop()
   threePointFieldGoalAttempts: number;
 
-  @IsNotEmpty()
   @IsNumber()
   @Min(0)
   @Max(1)
+  @IsNotEmpty()
   @Prop()
   threePointFieldGoalPercentage: number;
 
-  @IsNotEmpty()
   @IsNumber()
-  @Prop()
-  freeThrows: number;
-
+  @Min(1)
   @IsNotEmpty()
+  @Prop()
+  twoPointFieldGoals: number;
+
   @IsNumber()
-  @Prop()
-  freeThrowAttempts: number;
-
+  @Min(1)
   @IsNotEmpty()
+  @Prop()
+  twoPointFieldGoalAttempts: number;
+
   @IsNumber()
   @Min(0)
   @Max(1)
+  @IsNotEmpty()
+  @Prop()
+  twoPointFieldGoalPercentage: number;
+
+  @IsNumber()
+  @Min(1)
+  @IsNotEmpty()
+  @Prop()
+  freeThrows: number;
+
+  @IsNumber()
+  @Min(1)
+  @IsNotEmpty()
+  @Prop()
+  freeThrowAttempts: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(1)
+  @IsNotEmpty()
   @Prop()
   freeThrowPercentage: number;
 
-  @IsNotEmpty()
   @IsNumber()
+  @Min(1)
+  @IsNotEmpty()
   @Prop()
   offensiveRebounds: number;
 
-  @IsNotEmpty()
   @IsNumber()
+  @Min(1)
+  @IsNotEmpty()
   @Prop()
   defensiveRebounds: number;
 
-  @IsNotEmpty()
   @IsNumber()
+  @Min(1)
+  @IsNotEmpty()
   @Prop()
   totalRebounds: number;
 
-  @IsNotEmpty()
   @IsNumber()
+  @Min(1)
+  @IsNotEmpty()
   @Prop()
   assists: number;
 
-  @IsNotEmpty()
   @IsNumber()
+  @Min(1)
+  @IsNotEmpty()
   @Prop()
   steals: number;
 
-  @IsNotEmpty()
   @IsNumber()
+  @Min(1)
+  @IsNotEmpty()
   @Prop()
   blocks: number;
 
-  @IsNotEmpty()
   @IsNumber()
+  @Min(1)
+  @IsNotEmpty()
   @Prop()
   turnovers: number;
 
-  @IsNotEmpty()
   @IsNumber()
+  @Min(1)
+  @IsNotEmpty()
   @Prop()
   personalFouls: number;
 
-  @IsNotEmpty()
   @IsNumber()
+  @Min(1)
+  @IsNotEmpty()
   @Prop()
   points: number;
 }
